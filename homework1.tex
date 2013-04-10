@@ -1,0 +1,371 @@
+% vim options foldmethod=marker foldmarker=<<<,>>>
+\documentclass[paper=letter]{scrartcl}
+
+%<<< packages
+\usepackage{lmodern}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{microtype}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{xcolor}
+%mathtools has coloneqq
+\usepackage{mathtools}
+\definecolor{linkcolors}{rgb}{0.1,0.1,0.35}
+
+\usepackage[
+    twoside,
+    paperwidth=5.5in,
+    paperheight=8.5in,
+    top=0.25in,
+    bottom=0.25in,
+    inner=0.35in,
+    outer=0.25in
+   ]{geometry}
+ 
+% tikz libraries <<<
+	%for coordinate calculations
+	\usetikzlibrary{calc}
+	%positioning for "on grid" and "above= of this node"
+	\usetikzlibrary{positioning}
+	%matrix for matrices
+	\usetikzlibrary{matrix}
+%>>> tikz libraries
+%packages >>>
+
+%<<< newtheorem commands 
+\theoremstyle{definition}
+\newtheorem*{lemma*}{Lemma}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem{theorem}[equation]{Theorem}
+\newtheorem{corollary}[equation]{Corollary}
+\newtheorem{lemma}[equation]{Lemma}
+\newtheorem{proposition}[equation]{Proposition}
+\newtheorem{remark}[equation]{Remark}
+\newtheorem{conjecture}[equation]{Conjecture}
+\newtheorem{property}[equation]{Property}
+\newtheorem{example}[equation]{Example}
+\newtheorem{definition}[equation]{Definition}
+\newtheorem{listofcases}[equation]{List of Cases}
+\newtheorem{relations}[equation]{Relations}
+\newtheorem{notation}[equation]{Notation}
+\newtheorem{question}[equation]{Question}
+%>>>
+
+% subject title author <<<
+% for pdf metadata
+\def\thepdfsubject{Machine Learning Course}
+\def\thepdfkeywords{Stanford Machine Learning Problems}
+\def\theauthor{Justin D. Thomas}
+\def\thetitle{Machine Learning: Problem Set 1}
+
+\title{\thetitle}
+
+\author{\theauthor}
+% >>>
+
+% hyperrref setup options  <<<
+% required for unicode pdf metadata, pdfpagelabels=false is required to avoid a 
+% warning setting it automatically to false anyway, because hyperref detects 
+% \thepage as undefined (why?)
+\hypersetup{
+	%linkcolors defined with using xcolor package above
+	citecolor=linkcolors,
+	linkcolor=linkcolors,
+  	verbose,
+	%false is default, and default is to put a box around link
+	colorlinks	  = true,
+    breaklinks,
+    baseurl       = http://,
+    pdfborder     = 0 0 0,
+	% do not show thumbnails or bookmarks on opening
+	pdfpagemode   = UseNone,
+    pdfstartpage  = 1,
+    pdfcreator    = {\LaTeX{} using WinEdt 7.0},
+	% will/should be set automatically to the correct TeX engine used
+	pdfproducer   = {pdf\LaTeX{}},
+    bookmarksopen = false,
+	% to show sections and subsections
+	bookmarksdepth= 2,
+	pdfauthor     = {\theauthor},
+	pdftitle      = {\thetitle},
+	pdfsubject    = {\thepdfsubject},
+	pdfkeywords   = {\thepdfkeywords}
+}
+%>>> end hyperref setup options
+
+% my macros <<<
+
+% counters and corresponding commands <<<
+\newcounter{problem}
+\renewcommand{\theproblem}{\arabic{problem}.\,}
+\newcounter{subproblem}[problem]
+\renewcommand{\thesubproblem}{(\alph{subproblem})\,}
+%\setcounter{problem}{1}
+
+%\newenvironment{problem}[1]
+%{\textbf{\theproblem #1\smallskip}}
+%{\smallskip\stepcounter{problem}}
+\def\problem#1{%
+	\vskip 2ex plus 0.5ex minus 1.5ex%
+	\noindent\stepcounter{problem}%
+	\textbf{\theproblem#1\smallskip}%
+}
+\def\subproblem#1{%
+	\vskip 1ex plus 0.5ex minus 0.5ex%
+	\noindent\stepcounter{subproblem}%
+	\textit{\thesubproblem#1\smallskip}%
+}
+\def\solution{%
+	\vskip 1ex plus 0.48ex minus 0.3ex%
+	\noindent%
+	\textit{Solution to \arabic{problem}-(\alph{subproblem}):}
+	\\\vskip0.11ex%
+}
+% >>> end of counters and corresponding commands
+
+% standalone commands <<<
+\newcommand{\grad}{\nabla}
+% see www.logic.at/staff/salzer/etc/mhyphen
+\mathchardef\dash="2D
+\newcommand{\blank}{\underline{\hspace{1.2em}}}
+\newcommand{\calG}{\mathcal{G}}
+\newcommand{\calC}{\mathcal{C}}
+\newcommand{\calD}{\mathcal{D}}
+\newcommand{\inv}{^{-1}}
+\newcommand{\map}{\mathrm{map}}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\paren}[1]{^{(#1)}}
+\newcommand{\tpose}{^\top}
+\newcommand{\reals}{\mathbb R}
+% >>> standalone
+
+% tikzset commands <<<
+\tikzset{math nodes/.style={execute at begin node=$,execute at end node=$}}
+\tikzset{display math nodes/.style={execute at begin node=$\displaystyle, 
+		execute at end node=$}}
+\tikzset{script math nodes/.style={execute at begin node=$\scriptstyle, execute 
+		at end node=$}}
+\tikzset{map name/.style={font=\scriptsize}}
+%use "numbered picture" option in commutative diagrams which are numbered to 
+%get the number not to show up below the comm diag
+\tikzset{numbered picture/.style={baseline=(current bounding box.center)}}
+% >>> end of tikzset commands
+
+%>>> end of my macros
+
+\begin{document}
+
+\maketitle
+
+% problem 1 <<<
+\problem{Newton's method for computing least squares}
+
+\subproblem{Find the Hessian of the cost function $J(\theta) = \frac{1}{2} 
+\sum_{i=1}^m (\theta\tpose x\paren i - y\paren i)^2$.}
+
+\solution
+Note that $x\paren i \in \reals^N$, where $N$ is the number of features.  For 
+vocabulary practice $m$ is the number of training samples.  We have 
+$\theta\tpose x\paren i \in \reals$ and $y\paren i \in \reals$.  The function 
+$J$ goes from $\reals^N$ to $\reals$.  So the Hessian of $J$ is an $N \times N$ 
+symmetric matrix of functions $\reals^N \to \reals$.  In fact, we will see that 
+the Hessian of $J$ is an $N \times N$ matrix of constant functions.
+
+By the chain rule, we compute
+\begin{equation}
+	\label{equation: gradient of J}
+	\partial J/\partial \theta_j = \sum_{i} x\paren i _j (\theta\tpose x\paren 
+	i - y\paren i).
+\end{equation}
+Thus the Hessian of $J$ is
+\begin{equation}
+	\label{equation: Hessian of J}
+	H(J)_{jk} = \sum_{i=1}^m x\paren i_j x\paren i _k,
+\end{equation}
+which does not depend on $\theta$, so is a matrix of constant functions, as 
+claimed.
+
+\subproblem{Show that the first iteration of Newton's method gives us 
+	\[
+		\theta^\star = (X\tpose X)\inv X\tpose \vec y,
+	\]
+the solution to the least squares problem.}
+
+\solution
+By definition, $X$ is the matrix whose $i^{th}$ row vector is $x\paren i$.  
+Thus $X_{ij} = x_j \paren i$ and
+\begin{equation}
+	\label{equation: X transpose X is the Hessian}
+	(X\tpose X)_{jk} = \sum_{i} X\tpose_{ji} X_{ik}  = \sum_{i} x\paren i _j 
+	x\paren i _k = H(J)_{jk},
+\end{equation}
+where the last equality is \eqref{equation: Hessian of J}.
+We apply Newton's method to find a zero of $\grad J$ with initial guess
+$\theta_0 = 0$.  Recall that since $J \colon \reals^N \to \reals$ we have 
+$\grad J \colon \reals^N \to \reals^N$.  We write $\grad J$ as an 
+$N$-dimensional column vector of $\reals$-valued functions of $N$ variables.  
+In particular, the $j^{th}$ row of $\grad J$ is $\grad_j J \coloneqq \partial 
+J/\partial \theta_j$.   By definition of Newton's method, we have
+\begin{equation}
+	\label{equation: first iteration of Newton's method}
+	\theta_1= \theta_0-  H(J)\inv(\grad J)(\theta_0).
+\end{equation}
+In this description $\theta_i$ is a column vector in $\reals^N$.  Since $\grad 
+J$ has dimension $N \times 1$ and $H(J)\inv$ has dimension $N \times N$, we see 
+that the right hand side in the equation above is well-defined.  Recall that 
+$\grad J$ is a function of $\theta$.  When $\theta = 0$ we see by equation 
+\eqref{equation: gradient of J} that
+\begin{equation}
+	\label{equation: grad J at 0}
+	(\grad J) (0) = - \sum_{i} x\paren i _j y\paren i = -\sum_{i} X_{ij} 
+	y\paren i = X\tpose \vec{y},
+\end{equation}
+where, by definition, $\vec{y}$ is the $N \times 1$ vector whose $i^{th}$ row 
+is $y\paren i$, the $i^{th}$ observed value in the training set.
+Putting $\theta_0 = 0$ into \eqref{equation: first iteration of Newton's 
+method} and using equations \eqref{equation: X transpose X is the Hessian} and 
+\eqref{equation: grad J at 0}, we have
+\begin{equation}
+	\label{equation: }
+\theta_1 = - (X\tpose X)\inv (- X\tpose \vec{y}) = (X\tpose X)\inv X \tpose 
+\vec{y},
+\end{equation}
+as desired.
+%>>> end of 1
+
+% problem 2 <<<
+\problem{Locally-weighted logistic regression}
+
+Recall that logistic regression given by choosing $\theta \in \reals^N$ to give 
+the maximum likelihood of the sample set with the following prediction function
+\begin{equation}
+\label{equation: logistic prediction function}
+h_{\theta}(x) = \frac{1}{1+e^{-\theta\tpose x}}.
+\end{equation}
+In this model, $h_\theta(x)$ is predicting $y$, which takes values in 
+$\{0,1\}$.  Given $\theta$, then for each sample $i$ the value
+\[
+	L_i(\theta) = h_\theta(x\paren i)^{y\paren i}(1-h_\theta(x \paren 
+	i))^{1-y\paren i}
+\]
+is close to 1 if $h_\theta(x\paren i)$ is close to $y\paren i$.  Thus the 
+product $L(\theta) = \prod_i L_i(\theta)$ is close to 1 if $h_\theta$ is a good 
+predictor of $y\paren i$ given $x\paren i$ for all $i$. We think of this 
+product as the likelihood of the sample $\{(x\paren i, y\paren i) \mid i = 1, 
+\ldots, n\}$ when the parameter $\theta$ is given and $h_\theta$ is used to 
+predict $y\paren i$ as a function of $x \paren i$. We want to maximize 
+$L(\theta)$, but it is easier and equivalent to maximize $\ell(\theta) 
+\coloneqq \log L(\theta)$.
+\begin{gather}
+	\label{equation: ell(theta)}
+	\ell(\theta) = \sum_{i=1}^{m} y\paren i \log h_\theta (x\paren i) + (1 - 
+	y\paren i) \log(1-h_\theta(x\paren i)) = \sum_{i=1}^m \ell_i(\theta) \\
+	\nonumber
+	\mbox{The log likelihood for logistic regression.}
+\end{gather}
+Now we localize this around $x \in \reals^N$ using the weight function
+\begin{equation}
+	\label{equation: weight function}
+	w\paren i (x) = \exp(-\abs{x-x\paren i}^2 / (2\tau^2)),
+\end{equation}
+where $\tau$ is a constant parameter.  This gives us
+\begin{gather}
+	\label{equation: The weighted log likelihood for locally-weighted logistic 
+	regression}
+	\ell(\theta, x) = \sum_{i=1}^m w\paren i (x) \ell_i (\theta)\\
+	\nonumber
+	\mbox{Locally-weighted log likelihood linear regression.}
+\end{gather}
+For reasons I don't understand, Newton's method does not work well for any (or 
+some?) value(s) of $x$ when finding maxima of the function $\theta \mapsto 
+\ell(\theta, x)$.  We can fix this by adding a linear term to $\partial_\theta 
+\ell(\theta, x)$, or a $\theta$-quadratic term to $\ell(\theta, x)$.  We take a 
+quadratic term of the form $(-\lambda/2) \abs{\theta}^2$, or $\lambda 
+\theta\tpose \theta$, where $\lambda$ is very small, say $\lambda = 0.0001$.  
+The addition of a linear term to a function will adjust the critical points, 
+but when the linear term is small, they are not too far off.  Our adjusted 
+likelihood function for locally weighted linear regression is
+\begin{gather}
+	\label{equation: adjusted likelihood for locally-weighted lin reg}
+	\ell'(\theta,x) = -\frac{\lambda}{2} \theta\tpose \theta + 
+	\ell(\theta,x)
+	%\sum_{i=1}^m w\paren i \left[ y\paren i \log h_\theta(x\paren i) + 
+	%(1-y\paren i) \log (1-h_\theta(x\paren i)) \right]
+	\\
+	\nonumber
+	\mbox{Adjusted log likelihood for locally-weighted linear regression.}
+\end{gather}
+Now we compute $\partial_\theta \ell$ (really the gradient).  Clearly 
+$\partial_\theta (-\lambda/2)\abs{\theta}^2 = -\lambda \theta$.  Also 
+$\partial_\theta \ell(\theta,x) = \sum_i w\paren i(x) \partial_\theta 
+\ell_i(\theta)$.  So we need to compute $\partial_\theta \ell_i(\theta)$.  We 
+use
+\begin{align}
+	\label{equation: derivative of logistic function}
+	\partial_{\theta_j} h_\theta (x) &= \partial_{\theta_j} \frac{1}{1+ 
+e^{-\theta\tpose x}} \\
+\nonumber
+& = \frac{x_j e^{-\theta\tpose x}}{( 1 + e^{-\theta\tpose x})^2} \\
+\nonumber
+& = x_j h_\theta(x) (1-h_\theta(x))
+\end{align}
+Thus
+\begin{gather*}
+	\partial_{\theta_j} \log h_\theta(x\paren i) = x\paren i_j (1 - 
+	h_\theta(x\paren i) ), \\%\quad \mbox{and} \quad
+	\partial_{\theta_j} \log(1 - h_\theta (x\paren i)) = -x\paren i _j h_\theta 
+	(x\paren i).
+\end{gather*}
+Now if we set $z \in \reals^m$ to be the column vector with $i^{th}$ entry, 
+$z_i$, given by $w\paren i (y\paren i - h_\theta (x\paren i))$ we have
+\begin{align*}
+	\partial_{\theta_j} \ell'(\theta, x)
+	& = -\lambda \theta_j + \sum_{i=1}^m w\paren i (x)x \paren i _j  (y\paren i 
+	(1-h_\theta(x\paren i)) - (1-y\paren i)h_\theta (x\paren i)) \\
+	& = - \lambda \theta_j + \sum_{i=1}^{m} w\paren i (x) x\paren i _j ( 
+	y\paren i - h_\theta(x\paren i)) \\
+	& = -\lambda \theta_j + \sum_{i=1}^{m} X_{ji}\tpose z_i \\
+	& = -\lambda \theta_j + (X\tpose z)_j
+\end{align*}
+Dropping $j$ from the notation we get an equality of functions $\reals^N \times 
+\reals^N \to \reals^N$,
+\begin{equation}
+	\label{equation: gradient of l prime}
+	\grad_\theta \ell'(\theta, x) = - \lambda \theta + X\tpose z
+\end{equation}
+Going further, we get $\partial_{jk} \ell' = \partial_{j} (X\tpose z)_k - 
+\lambda \delta_{jk}$.  Note that $\partial_{j} z_i = -\partial_j h_\theta( 
+x\paren i))$.  By \eqref{equation: derivative of logistic function}, 
+$\partial_{j} h_\theta(x \paren i) = x_j\paren i h_\theta(x\paren i) 
+(1-h_\theta (x\paren i))$.  Together, these equations give
+\begin{align}
+	\nonumber
+	H\ell'(\theta, x)_{jk} & = \partial_{jk} \ell' (\theta, x) \\
+	\nonumber
+	& =- \lambda \delta_{jk} + \sum_i X_{ki}\tpose \partial_j z_i \\
+	\nonumber
+	& = (-\lambda I)_{jk} + \sum_i X_{ki}\tpose x_j\paren i h_\theta(x\paren i) 
+	(1 - h_\theta(x \paren i)) \\
+	\nonumber
+	& = (- \lambda I)_{jk} + \sum_{i,l} X_{ki} \tpose h_\theta(x\paren l) 
+	(1-h_\theta (x \paren l)) \delta_{il} X_{lj} \\
+	\label{equation: Hessian of ell prime}
+	& = (-\lambda I + X\tpose D X)_{jk},
+\end{align}
+where $D_{il} = h_{\theta}(x \paren l) (1 - h_\theta(x \paren l)) \delta_{il}$ 
+is a diagonal $m \times m$ matrix.
+
+\subproblem{ Implement the Newton-Raphson algorithm for optimizing 
+	$\ell(\theta)$ for a new query point $x$, and use this to predict the class 
+of $x$}.
+\solution
+Recall that the Newton-Raphson algorithm is just another name for the update 
+rule
+\[
+	\theta \coloneqq \theta - H\inv \grad_\theta \ell(\theta),
+\]
+used for finding the critical points of $\ell(\theta)$.
+
+% >>> end of problem 2
+
+\end{document}

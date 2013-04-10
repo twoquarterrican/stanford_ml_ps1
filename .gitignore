@@ -165,7 +165,13 @@ pip-log.txt
 #########
 # LaTeX
 #########
-.aux
-.log
-.out
-.synctex.gz
+*.aux
+*.log
+*.out
+*.synctex.gz
+.RData
+.RHistory
+load_data.m
+lwlr.m
+plot_lwlr.m
+practicing_in_R.R

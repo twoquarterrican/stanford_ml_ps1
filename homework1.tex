@@ -124,6 +124,8 @@
 % >>> end of counters and corresponding commands
 
 % standalone commands <<<
+\DeclareMathOperator{\prob}{prob}
+\DeclareMathOperator{\trace}{tr}
 \newcommand{\grad}{\nabla}
 % see www.logic.at/staff/salzer/etc/mhyphen
 \mathchardef\dash="2D
@@ -366,6 +368,434 @@ rule
 \]
 used for finding the critical points of $\ell(\theta)$.
 
+The code for this problem can be found in the IPython notebook in the same 
+directory as this document, \texttt{lwlr.ipynb}.
+
 % >>> end of problem 2
 
+% problem 3 <<<
+\problem{Multivariate Least Squares}
+Given a training set $\reals^n \leftarrow S \rightarrow \reals^p$, find a 
+linear function $L \colon \reals^n \to \reals^p$ best approximating this 
+training set.  More concretely, $S = \{1, \ldots, m\}$ and for each $i \in S$ 
+we have $x\paren i \in \reals^n$ and $y\paren i \in \reals^p$.   The linear 
+function $L$ is usually thought of as an $n \times p$ matrix $\theta$.  That 
+is, $L(x) = \theta\tpose x$.  We want to find $L$ such that the sum over all $i 
+\in S$ of the distances from $L(x\paren i)$ to $y\paren i$ is minimal.  That 
+is, we want $\theta$ minimizing the cost function
+\begin{equation}
+	\label{equation: J of theta}
+	J(\theta) = \frac{1}{2} \sum_{i=1}^{m} \sum_{j=1}^p \left( (\theta\tpose 
+	x\paren i)_j - y\paren i _j\right)^2.
+\end{equation}
+
+
+\subproblem{Write $J(\theta)$ from equation \eqref{equation: J of theta} in 
+matrix-vector notation.}
+
+\solution
+
+Recall that $X$ is the $m \times n$ matrix $X_{ij} = x\paren i _j$.  So 
+$X\tpose$ has columns given by the $x\paren i$.  Thus $\theta\tpose X\tpose$ 
+has $m$ columns given by the $\theta\tpose x\paren i \in \reals^p$.  Let 
+$Y\tpose$ be the $p\times m$ matrix having columns given by the $y\paren i$, 
+then $J(\theta)$ is half the sum of the norms of the column vectors of the $p 
+\times m$ matrix
+$\theta\tpose X\tpose - Y\tpose$.  Given any matrix $A$, the square matrix 
+$A\tpose A$ has diagonal entries equal to the squared norms of the column 
+vectors of $A$.  Thus the trace of $A\tpose A$, denoted $\trace(A\tpose A)$, is 
+the sum of the squared norms of the column vectors of $A$.  We conclude that
+\begin{equation}
+	\label{equation: matrix formula for J of theta}
+	J(\theta)  = \frac{1}{2}\trace((X\theta - Y)(\theta\tpose X \tpose - 
+	Y\tpose)) = \frac{1}{2}\abs{X\theta - Y}^2
+\end{equation}
+
+\subproblem{Find the closed form solution for $\theta$ which minimizes 
+$J(\theta)$.  This is the equivalent to the normal equations for the 
+multivariate case.}
+
+\solution
+
+In coordinates,
+
+\begin{align}
+	\nonumber
+	J(\theta)
+	&= \frac{1}{2} \sum_{i,j} ((X\theta - Y)_{ij})^2 \\
+	\nonumber
+	& = \frac{1}{2} \sum_{i,j}
+	\left( -Y_{ij} + \sum_{p} X_{ip} \theta_{pj} \right)^2
+\end{align}
+Let $\partial_{\theta_{ij}} = \partial_{ij}$, then
+\begin{align}
+	\nonumber
+	\partial_{kl} J(\theta) & =  \sum_{i,j} \left( -Y_{ij} + \sum_{p} X_{ip} 
+\theta_{pj} \right)\left( \sum_p X_{ip} \delta_{k}^{p} \delta^j_l \right)\\
+\nonumber
+& = \sum_{i,j} (-Y_{ij} +  \sum_p X_{ip} \theta_{pj} )X_{ik}\delta^j_l\\
+\nonumber
+& = \sum_{i} \left(-X_{ik} Y_{il}+ X_{ik}\sum_{p} X_{ip} \theta_{pl} \right)\\
+\nonumber
+& = ( - X\tpose Y + X\tpose X \theta)_{kl}
+\end{align}
+In invariant notation, we use the facts $\grad_\theta \trace (\theta A)= 
+A\tpose$ and $\grad_{\theta}\trace(\theta\tpose B)= B$.   It helps me to 
+understand these formulas in terms of the derivative $df \colon TM \to T\reals$ 
+of a function of manifolds $f \colon M \to \reals$.  In this case, we are 
+differentiating with respect to $\theta$, so we should have $\theta \in T_\eta 
+M$ for some manifold $M$ and some $\eta$.  Therefore let us put $M = M_{n\times 
+p}$, then $\eta$ is any point of $M$ since $\theta \in M_{n\times p} \simeq 
+T_\eta M_{n \times p}$ for all $\eta$.  Let $f = \trace \circ R_A \colon \eta 
+\mapsto \eta A \mapsto \trace(\eta A)$.  Then, by definition, $\grad_\theta 
+\trace(\theta A)$ is the $n \times p$ matrix of functions on $M_{n \times p}$ 
+whose $(i,j)$ entry is given by $\eta \mapsto (df)_\eta(E_{ij})$, where 
+$E_{ij}$ is the matrix whose $(k,l)$ entry is $\delta^k_i \delta^l_j$.
+
+Let us coordinatize $M_{n\times p}$ by $(\eta_{ij}) \colon \reals^{n\times p} 
+\to M_{n\times p}$.  We have $T\reals^{n\times p} = \reals^{n\times p} \times 
+\reals^{n\times p}$ and, in this coordinate system, $df \colon \reals^{n\times 
+p} \times \reals^{n\times  p} \to \reals$, $df(\eta, E) = (df)_\eta (E)$, which 
+is $\lim_{\epsilon \to 0} \frac{1}{\epsilon} (f(\eta + \epsilon E) - f(\eta))$.  
+Since $f$ is linear, this is just $f(E) = \trace (EA)$.  Let's compute 
+$\trace(E_{ij} A)$.  We have $(E_{ij}A)_{kl} = \sum_{m} (E_{ij})_{km} A_{ml} = 
+\delta^k_i A_{jl}$.  Therefore $\trace(E_{ij} A) = \sum_m (E_{ij}A)_{mm} = 
+A_{ji} = (A\tpose)_{ij}$.  Thus $(df)_\eta (E)$ is independent of $\eta$. It is
+is just the $n \times p$ matrix $A \tpose$.
+
+If $f \colon M_{n \times p} \to \reals$, then $f\circ ()\tpose$ has gradient 
+$(\grad f)\tpose$.  Indeed,
+\begin{align*}
+	(\partial_{\theta_{ij}} f\circ ()\tpose)(\theta)
+	&= \lim_{\epsilon \to 0} \frac{1}{\epsilon} (f((\theta + \epsilon 
+	E_{ij})\tpose) - f(\theta\tpose))\\
+	&= \lim_{\epsilon \to 0} \frac{1}{\epsilon} (f(\theta\tpose + \epsilon 
+	E_{ji}) - f(\theta\tpose))\\
+	&= (\partial_{\theta_{ji}} f)(\theta\tpose).
+\end{align*}
+This implies that $\grad_{\theta} \trace(\theta\tpose B) = (B\tpose) \tpose = 
+B$. Note that the $\theta\tpose$ in the final line above does not affect us 
+here because for $f(\theta) = \trace(\theta A)$, $\partial_{\theta_{ij}} f$ is 
+independent of $\theta$.  
+
+We apply the product rule to the function $\theta \mapsto \trace(X\theta 
+\theta\tpose X\tpose)$ by permuting $\theta$ and $\theta\tpose$ to the front.  
+Recall that if $A$ and $B$ are matrices so that $AB$ is defined and is square, 
+then the same holds for $BA$ and $\trace(AB) = \trace (BA)$.  In the expression 
+$X\theta \theta\tpose X \tpose$ we can take $A = X$ and $B = \theta 
+\theta\tpose X\tpose$.  Then $AB$ is defined and $AB$ is square, so we get 
+$\trace(X \theta \theta\tpose X\tpose) = \trace(\theta \theta \tpose X\tpose 
+X)$.  Similarly, we have $\trace(\theta \theta\tpose X\tpose X) = \trace( 
+\theta \tpose X\tpose X \theta)$.  Using these facts, we apply the product rule 
+to compute
+\begin{align}
+	\nonumber
+	\grad_{\theta} \trace( X \theta \theta\tpose X\tpose)
+	\nonumber
+	&= \grad_{\theta} \trace (\theta \theta\tpose X\tpose X) + 
+	\grad_{\theta}\trace( \theta \tpose X\tpose X \theta)\\
+	\nonumber
+	& = (\theta\tpose X\tpose X)\tpose + X\tpose X \theta \\
+	\label{equation: grad X theta theta tpose X tpose}
+	& = 2 X\tpose X \theta.
+\end{align}
+
+
+Finally \eqref{equation: matrix formula for J of theta} and \eqref{equation: 
+grad X theta theta tpose X tpose} give can be used to compute $\grad_{\theta} 
+J(\theta)$ in invariant notation.
+\begin{align}
+	\nonumber
+	\grad_\theta J(\theta) & = \frac{1}{2} \grad_{\theta} \left(\trace ( 
+X\theta \theta\tpose X\tpose) - 2\trace(X\theta Y\tpose)+ \trace (YY\tpose) 
+\right)
+	\\
+	\nonumber
+	& = \frac{1}{2}(2 X\tpose X \theta - 2X\tpose Y)\\
+	\label{equation: theta derivative of J}
+	& = X\tpose X \theta - X\tpose Y
+\end{align}
+
+Finally, setting $\grad_{\theta} J(\theta) = 0$, we get $X\tpose X \theta = 
+XY$.  Recall that the square root of ${\det(X\tpose X)}$ is the volume-change 
+factor of the linear map $X \colon \reals^{m} \to \reals^{n}$.  So as long as 
+we have enough points $x\paren i \in \reals^n$ so that the span of $\{ x\paren 
+i \mid i = 1, \ldots, m\}$ is all of $\reals^n$, then $\det(X\tpose X)$ must be 
+non-zero.  If all of the sample points lie in some $k$-dimensional subspace of 
+$\reals^{n}$ with $k < n$, we just refactor the data to replace $n$ by $k$.  
+Thus, we can assume $X\tpose X$ is invertible without loss of generality.  This 
+means we can solve for $\theta$. We have $\theta = (X\tpose X)\inv X\tpose Y$.
+
+% >>> end of problem 3
+
+% problem 4 <<<
+\problem{Naive Bayes}
+
+Let $W$ be a finite set.  Let a feature vector $x$ be a map $W \to \{0,1\}$.  
+Let an output vector $y$ be a point of $\{0,1\}$.  Given a finite set $S = \{1, 
+\ldots, m\}$ and training data $\map(W, \{0,1\}) \leftarrow S \rightarrow 
+\{0,1\}$, we seek a function $\map(W, \{0,1\}) \to \{0,1\}$ approximating the 
+training data as closely as possible.
+
+Concretely, $W$ is a list of words $W = \{\mbox{\emph{apple}, \emph{boat}, 
+\emph{jet},}\ldots \}$, $x$ is a subset of $W$ given by an email, and $y$ is a 
+classification of $x$ as \emph{spam} or \emph{not spam}.
+
+Given a map $P \colon \map(W, \{ 0,1\}) \times \{0,1\} \to \reals$ we get a 
+function
+\[
+	f_P \colon \map(W, \{0,1\}) \to \{0,1\} \quad
+	f_P(x) = 1 \iff P(x,1) \geq P(x,0).
+\]
+Since $f_P$ is invariant under transformations $P \mapsto aP +b$, where $a, b 
+\in \reals$, $a > 0$, we may as well assume $P \geq 0$ and the integral of $P$ 
+is 1.   That is, assume $P$ is a probability distribution.  We will use the 
+lower case $p$ to refer to a probability distribution on $\map(W, \{0,1\}) 
+\times \{0,1\}$.
+
+We have $p(x,y) = p(x|y)p(y)$.  We assume $p(y)$ is binomially distributed with 
+$\phi_y \coloneqq p(y=1)$.  In addition, we assume $p(x|y)= \prod_{j} p(x(j) = 
+1 |y)$. Thus we are assuming that, given $y$, the value of $x$ at $j\in W$ is 
+independent of the value at $j' \in W$, where $j' \neq j$.  This is a naive 
+assumption, thus the word \emph{naive} in the name of this model.  For instance 
+in the spam email classifier example we are assuming that if we know an email 
+is spam and the word \emph{win} appears, this has no effect on the probability 
+that \emph{money} appears.  This assumption seems unlikely to be true, but the 
+algorithm still returns reasonable classifications.
+
+This assumption means we only need to specify probabilities $\phi_y, 
+\phi_{j|y=0},$ and $ \phi_{j|i} \in [0,1]$ to determine $p_\phi$, where $\phi_y 
+= p_\phi(y=1)$, $\phi_{j|i} = p_\phi(x(j) = 1| y = i)$.
+
+\subproblem{Reconstruct $p_\phi$ from $\phi$ and reconstruct the joint 
+likelihood function \[ \ell(\phi) = \log \prod_{i \in S} p_\phi(x\paren i, 
+y\paren i).\]}
+
+\solution
+
+Let $p = p_\phi$.  We have
+\begin{align*}
+	p(x,y)
+	&= p(x|y)p(y) \\
+	&= p(x|y)\phi_y^y (1-\phi_y)^{1-y} \\
+	&= p(x|y=0)^{1-y}p(x|y=1)^y \phi_y^y (1-\phi_y)^{1-y} \\
+	&= \phi_y^y (1 \! -\! \phi_y)^{1-y} \! \prod_{j\in W} 
+	\phi_{j|0}^{x_j(1-y)}(1\!  -\! \phi_{j|0})^{(1-x_j)(1-y)} 
+	\phi_{j|1}^{x_jy}(1\!- \! \phi_{j|1})^{(1-x_j)y}
+\end{align*}
+	
+%and $p(x=k|y=l)$ by assumption is $\prod_{j} p(x(j)=k|y=l)$. Therefore,
+%\begin{multline*}
+	%p(x,y) = \left(\prod_{j \in W} 
+	%(\phi_{j|0})^{x(j)}(1-\phi_{j|0})^{1-x(j)}\right)^{y} \times \\
+	%\left(\prod_{j\in W} (\phi_{j|1})^{x(j)}(1-\phi_{j|1})^{1-x(j)} 
+	%\right)^{1-y}
+%\end{multline*}
+
+Now compute
+\begin{align*}
+	\ell(\phi)
+	&= \sum_{i\in S} y\paren i \log \phi_y + (1-y\paren i) \log (1-\phi_y)\\
+	& + \sum_{i\in S} \sum_{j\in W} x_j\paren i (1- y \paren i) \log(\phi_{j | 
+0})+(1-x\paren i _j)(1-y\paren i) \log(1-\phi_{j | 0}) \\
+ & + \sum_{i\in S} \sum_{j\in W}  x\paren i _j y\paren i \log(\phi_{j|1}) + 
+(1-x\paren i _j) y\paren i \log(1 - \phi_{j|1})\\
+\end{align*}
+
+\subproblem{Show that the parameters which maximize the likelihood function are 
+the same as those given in the lecture notes. (We will just show the answer 
+once since it is long.)}
+
+Compute some derivatives.
+\begin{align*}
+	\partial_{\phi_{y}} \ell(\phi)
+	&= \sum_{i\in S} y\paren i / \phi_y - (1-y\paren i) /(1-\phi_y) 	\\
+	\partial_{\phi_{j|0}} \ell(\phi)
+	&= \sum_{i \in S}  x \paren i _j (1-y\paren i) / \phi_{j|0} - (1 - x\paren 
+	i _j)(1 - y\paren i) /(1-\phi_{j|0})\\
+	\partial_{\phi_{j|1}} \ell(\phi)
+	& = \sum_{i \in S}  x\paren i _j y\paren i /\phi_{j|1} - (1 - x\paren i _j) 
+	y\paren i / (1 - \phi_{j|1})
+\end{align*}
+Setting $\partial_{\phi_y} = 0$, we get $0 = (1-\phi_y) (\sum y\paren i ) - 
+\phi_y \sum(1-y\paren i)$, which simplifies to $ 0 = (\sum y\paren i) - \phi_y 
+\abs{S}$.  Thus $\phi_y = \abs{S_1}/\abs{S}$, where $S_k = \{ i \in S \mid 
+y\paren i = k\}$.  That is, $\phi_y$ is the number of $i$ in the training set 
+$S$ classified as $y =1$.
+
+Similarly, setting $\partial_{\phi_{j|0}}\ell(\phi) = 0$, we get
+\begin{align*}
+	0
+	&= (1-\phi_{j|0}) \left(\sum x\paren i_j (1-y\paren i)\right) - \phi_{j|0} 
+	\sum (1-x\paren i_j)( 1 - y\paren i)\\
+	&= \left( \sum x\paren i _j (1 - y\paren i) \right) - \phi_{j|0} \sum 
+	(1-y\paren i)
+\end{align*}
+Solving for $\phi_{j|0}$ we get $\sum_{i \in S_0} x\paren i _j  /\abs{S_0}$. 
+This is just the fraction of the $y=0$ training set where $x(j)$ takes the 
+value $1$.  In email parlance, it is the fraction of non-spam emails in which 
+the $j^{th}$ word in $W$ appears at least once.
+
+A reasonable guess is the $\phi_{j|1}$ is the fraction of spam emails 
+containing the $j^{th}$ word at least once.  This is $\sum_{i \in S_1} x\paren 
+i_j /\abs{S_1}$.  We can derive this by setting $\partial_{\phi_{j|1}} = 0$, 
+then
+\begin{align*}
+	0
+	&= (1-\phi_{j|1}) (\sum x\paren i _j y\paren i) - \phi_{j|1} \sum 
+	(1-x\paren i_j) y\paren i \\
+	&= \sum x \paren i _j y\paren i - \phi_{j|1} \sum y \paren i\\
+	\phi_{j|1} &= (\sum_{i \in S_1} x\paren i _j)/\abs{S_1}
+\end{align*}
+
+In the notation $1\{\mbox{true}\} = 1$ and $1\{\mbox{false}\} = 0$ and $S = 
+\{1, \ldots, m\}$ we put the formulas as they occur in the notes.  In addition, 
+if we define $S^j \coloneqq \{ i \in S \mid x\paren i _j =1 \}$, then we have 
+significantly abbreviated formulas.
+\begin{align*}
+	\phi_y &= \frac{\sum_{i=1}^{m} 1\{ y\paren i = 1\}}{m} = 
+	\frac{\abs{S_1}}{\abs{S}}\\
+	\phi_{j|k} & = \frac{\sum_{i=1}^{m} 1\{ x\paren i = 1 \wedge y\paren i = 
+	k\}} {\sum_{i=1}^m 1\{ y\paren i = k\}} = \frac{\abs{S^j\cap S_k  
+	}}{\abs{S_k}}
+\end{align*}
+
+\subproblem{ Show that the naive Bayes algorithm is a linear classifier.  That 
+	is, given $x\in \reals^n$, show that there exists $\theta \in \reals^{n+1}$ 
+	such that
+	\[
+		p(y=1|x) \geq p(y=0|x) \iff \theta \tpose \begin{pmatrix} 1 \\ x 
+		\end{pmatrix} \geq 0
+	\]
+}
+
+Bayes rule says
+\begin{align*}
+	p(y=k|x)
+	&= \frac{p(x|y=k)p(y=k)}{p(x)} \\
+	&= \frac{\phi_y^k (1-\phi_y)^{1-k} \prod_j \phi_{j|k}^{x_j} 
+(1-\phi_{j|k})^{1-x_j} }{p(x)}
+\end{align*}
+Clearly $p(y=1|x) \geq p(y=0|x)$ if and only if $\log p(y=1|x) \geq \log 
+p(y=0|x)$ since $p \geq 0$ and $\log$ is an increasing function.  Let us 
+compute the difference of these logarithms.
+\begin{align*}
+	\log{p(y=1|x)}-\log{p(y=0|x)} = \hspace{-8em}
+	&\\
+	&= \log \phi_y + \sum_j ({x_j} \log \phi_{j|1} + (1-x_j) \log(1 - 
+	\phi_{j|1} )) \\
+	&\phantom{=}-  \log (1-\phi_y)  - \sum_j (x_j\log \phi_{j|0} + (1-x_j) 
+	\log(1-\phi_{j|0})) \\
+	&=
+	\log \left(  \frac{\phi_y\prod_j (1-\phi_{j|1})}{(1-\phi_y) \prod_j 
+	(1-\phi_{j|0})} \right) +
+	\sum_j \log \left( \frac{\phi_{j|1} (1-\phi_{j|0})}{ (1-\phi_{j|1}) 
+	\phi_{j|0}}\right)x_j \\
+	&= \theta_0 \cdot 1 + \sum_j \theta_j x_j = \theta\tpose \begin{pmatrix} 1 
+\\ x \end{pmatrix},
+\end{align*}
+where $\theta_0 = \log( \phi_y\prod_j (1-\phi_{j|1})) - \log((1-\phi_y) \prod_j 
+(1-\phi_{j|0}))$ and $\theta_j = \log ( {\phi_{j|1} (1-\phi_{j|0})}) - \log({ 
+(1-\phi_{j|1}) \phi_{j|0}})$.  This completes the proof that naive Bayes is a 
+linear classifier.
+
+% >>> end of problem 4
+
+% problem 5 <<<
+
+\problem{Exponential family and the geometric distribution}
+
+\subproblem{ Consider the geometric distribution parameterized by $\phi$:
+	\[
+		p(y;\phi) = (1-\phi)^{y-1} \phi, y=1,2,3,\ldots
+	\]
+	Show that the geometric distribution is in the exponential family, and give 
+	$b(y)$, $\eta$, $T(y)$, and $a(\eta)$.
+}
+
+\solution
+
+Recall that the exponential distribution with parameter $\eta$ and functions 
+$b(y), T(y), a(\eta)$ is
+\[
+	p(y;\eta) = b(y) \exp( \eta\tpose T(y) - a(\eta)).
+\]
+To write $(1-\phi)^{y-1} \phi$ as an exponential, we take logs.  We have 
+$p(y;\eta) = \exp((y-1) \log(1-\phi) + \log \phi)$.  Inside the exponential, we 
+isolate the $y$-dependence, which is $y \log(1-\phi)$.  This implies we should 
+guess $T(y) = y$ and $\eta = \log(1-\phi)$.  This implies we need to write the 
+remaining part of the exponential as a function of $\log(1-\phi)$.  The 
+remaining piece is $\log(\phi/(1-\phi))$.  We can write this as $\log(1-e^\eta) 
+- \eta$.  This is what we take $-a(\eta)$ to be.  We set $b(y) = 1$.  In 
+summary,
+\[
+	\eta = \log(1-\phi) \quad T(y) = y \quad a(\eta) = \eta - \log(1-e^\eta)  
+	\quad b(y) = y,
+\]
+gives
+\[
+	b(y) \exp(\eta \tpose T(y) - a(\eta)) = (1-\phi)^{y-1} \phi.
+\]
+
+
+\subproblem{Consider performing regression using a GLM with a geometric 
+response variable.  What is the canonical response function for the family?}
+
+\solution
+
+Recall that the target variable $y$ in a generalized linear model (GLM) is also 
+called the response variable.  The response function is $\eta \mapsto 
+E[T(y);\eta]$, the expectation value of $T(y)$ parameterized by $\eta$.  In the 
+case of the geometric distribution, we computed $T(y) = y$ in the previous part 
+of this problem.  Thus we need to compute $\sum_{y = 1, 2, 3, \ldots} 
+(1-\phi)^{y-1} \phi y$.  This is $ \sum_{y\geq 1} - \partial_\phi((1-\phi)^y 
+\phi) +  (1-\phi)^y$.  The geometric series $\sum_{y\geq 0} (1-\phi)^y$ 
+converges to $1/\phi$.  This implies
+\begin{align*}
+E[y;\phi]
+= -\partial_\phi (\phi (\frac{1}{\phi} - 1)) + \frac{1}{\phi} -1= 
+\frac{1}{\phi}
+\end{align*}
+
+Therefore $E[T(y);\eta] = E[y;\phi(\eta)] = E[y; 1-e^\eta] = 1/(1-e^\eta)$ is 
+the canonical response function for this model.  
+
+\subproblem{ For a training set $\{ (x\paren i, y\paren i); i = 1, \ldots m\}$, 
+	let the log-likelihood of an example be $\log p(y\paren i| x\paren i; 
+	\theta)$.  By taking the derivative of the log-likelihood with respect to 
+	$\theta_j$, derive the stochastic gradient ascent rule for learning using a 
+GLM with geometric responses $y$ and the canonical response function.}
+
+\solution
+
+Recall that in generalized linear models (GLM's) $\theta$ is related to the GLM 
+parameters by setting $\eta = \theta\tpose x$.   With this we have $\phi = 1 - 
+e^{\theta\tpose x}$ so $p(y|x;\theta) = (1-\phi)^{y-1} \phi = 
+e^{(y-1)\theta\tpose x}(1-e^{\theta\tpose x})$.  Thus we think of $\theta$ as a 
+more fundamental parameter, giving us a range of $\eta$'s.  Also, $\theta$ 
+gives the prediction function $x \mapsto h_\theta(x) \coloneqq E[y;\theta\tpose 
+x]$.  Now the log-likelihood of the sample is
+\[
+	\ell(\theta)
+	= \sum_{i} (y\paren i -1) \theta\tpose x\paren i  + \log (1 - 
+	e^{\theta\tpose x})
+\]
+Now compute the gradient.
+\begin{align*}
+	\partial_{\theta_j} \ell(\theta)
+	&= \sum_i  (y\paren i -1 ) x\paren i_j + \frac{-x_j e^{\theta\tpose x\paren 
+	i}}{1-e^{\theta\tpose x\paren i}}\\
+	&= \sum_i y \paren i x\paren i _j - \frac{x_j}{1-e^{\theta \tpose x}} \\
+	&= \sum_i y\paren ix_j\paren i - h_\theta(x \paren i) x\paren i_j
+\end{align*}
+
+Therefore the stochastic update rule for gradient ascent is
+\begin{align*}
+	\theta_j
+	&\coloneqq \theta_j + \alpha (y\paren i - h_\theta(x\paren i))x_j \\
+	&= \theta_j + \alpha \left(y\paren i - \frac{x\paren i _j}{1 - 
+	e^{\theta\tpose x}}\right)
+\end{align*}
+where $\alpha$ is a small constant parameter indicating the speed of gradient 
+ascent.
 \end{document}
